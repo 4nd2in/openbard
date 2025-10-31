@@ -1,0 +1,29 @@
+root = true
+
+[*.{kt,kts}]
+# Allow capitalized function names for composables
+ktlint_standard_filename = disabled
+ktlint_standard_function-naming = disabled
+ktlint_function_naming_ignore_when_annotated_with=Composable
+
+# Enforce indentation (default: 4 spaces)
+indent_size = 4
+
+# Require trailing commas in multiline lists
+ij_kotlin_allow_trailing_comma = true
+
+# Require blank lines around function/class declarations
+ktlint_standard_wrapping = true
+
+# Enforce line breaks after annotations
+ktlint_standard_annotation-spacing = true
+
+# Enforce a blank line before return statements
+ktlint_standard_no-blank-line-before-return = false
+
+# Force newline for functions with more than 2 parameters
+ktlint_standard_parameter-list-wrapping = true
+
+
+[/app/build.gradle.kts]
+ktlint_standard_max-line-length = disabled
