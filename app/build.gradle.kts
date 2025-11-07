@@ -17,7 +17,7 @@ android {
 
     defaultConfig {
         applicationId = "ch.openbard.app"
-        minSdk = 33
+        minSdk = 35
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
@@ -38,12 +38,14 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
 kotlin {
     compilerOptions {
         jvmTarget.set(JvmTarget.JVM_17)
+        freeCompilerArgs = listOf("-XXLanguage:+PropertyParamAnnotationDefaultTargetMode")
     }
 }
 
@@ -55,7 +57,25 @@ dependencies {
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
+    debugImplementation(libs.androidx.ui.tooling)
+    debugImplementation(libs.androidx.ui.test.manifest)
+
+    implementation(libs.kotlinx.serialization.core)
+    implementation(libs.kotlinx.serialization.json)
+
+    implementation(libs.androidx.navigation3.ui)
+    implementation(libs.androidx.navigation3.runtime)
+    implementation(libs.androidx.material3.adaptive.navigation3)
+    implementation(libs.androidx.material3.adaptive.navigation.suite)
+
     implementation(libs.androidx.compose.material3)
+    implementation(libs.androidx.animation)
+
+    implementation(libs.androidx.glance.appwidget)
+    implementation(libs.androidx.glance.material3)
+    implementation(libs.androidx.compose.adaptive)
+    implementation(libs.androidx.compose.adaptive.layout)
+
     implementation(libs.androidx.media3.exoplayer)
     implementation(libs.androidx.media3.exoplayer.dash)
     implementation(libs.androidx.media3.ui)

@@ -4,24 +4,26 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import ch.openbard.app.redux.AppState
+import ch.openbard.app.ui.navigation.Navigation
 import ch.openbard.app.ui.theme.OpenBardTheme
+import ch.smoca.redux.Store
 
 class MainActivity : ComponentActivity() {
+    private lateinit var store: Store<AppState>
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        store = (application as MainApplication).store
+
         enableEdgeToEdge()
         setContent {
-            OpenBardTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
+            val state by store.stateObservable.collectAsState()
 
-                }
+            OpenBardTheme {
+                Navigation(state, store::dispatch)
             }
         }
     }
