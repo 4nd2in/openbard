@@ -63,7 +63,7 @@ private fun Screens(state: AppState, dispatch: (Action) -> Unit) {
                     )
                 }
             }
-            entry<BackStackEntry.Player> { MusicPlayer() }
+            entry<BackStackEntry.Player> { MusicPlayer(isPlaying = false) }
             entry<BackStackEntry.Settings> { Settings() }
         },
     )

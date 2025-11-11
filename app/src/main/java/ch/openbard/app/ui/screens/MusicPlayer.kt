@@ -18,6 +18,7 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.IconButtonShapes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
@@ -35,6 +36,8 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewDynamicColors
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import ch.openbard.app.R
@@ -42,8 +45,8 @@ import ch.openbard.app.ui.theme.OpenBardTheme
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun MusicPlayer() {
-    var isPlaying by remember { mutableStateOf(false) }
+fun MusicPlayer(isPlaying: Boolean) {
+    var isPlaying by remember { mutableStateOf(isPlaying) }
     var progress by remember { mutableFloatStateOf(0.4f) }
 
     Column(
@@ -100,12 +103,15 @@ fun MusicPlayer() {
             IconButton(
                 modifier =
                     Modifier.size(
-                        IconButtonDefaults.mediumContainerSize(
-                            IconButtonDefaults.IconButtonWidthOption.Wide
+                        IconButtonDefaults.largeContainerSize(
+                            IconButtonDefaults.IconButtonWidthOption.Uniform
                         )
                     ),
-                shape = IconButtonDefaults.mediumRoundShape,
-                colors = IconButtonDefaults.filledIconButtonColors(),
+                shapes = IconButtonShapes(
+                    shape = IconButtonDefaults.largeRoundShape,
+                    pressedShape = IconButtonDefaults.largeSquareShape,
+                ),
+                colors = IconButtonDefaults.filledTonalIconButtonColors(),
                 onClick = { /* Previous */ }
             ) {
                 Icon(
@@ -120,7 +126,10 @@ fun MusicPlayer() {
                             IconButtonDefaults.IconButtonWidthOption.Wide
                         )
                     ),
-                shape = IconButtonDefaults.largeRoundShape,
+                shapes = IconButtonShapes(
+                    shape = if (isPlaying) IconButtonDefaults.largeSelectedSquareShape else IconButtonDefaults.largeSquareShape,
+                    pressedShape = if (isPlaying) IconButtonDefaults.largeSquareShape else IconButtonDefaults.largeSelectedSquareShape
+                ),
                 colors = IconButtonDefaults.filledIconButtonColors(),
                 onClick = { isPlaying = !isPlaying }
             ) {
@@ -135,12 +144,15 @@ fun MusicPlayer() {
             IconButton(
                 modifier =
                     Modifier.size(
-                        IconButtonDefaults.mediumContainerSize(
-                            IconButtonDefaults.IconButtonWidthOption.Wide
+                        IconButtonDefaults.largeContainerSize(
+                            IconButtonDefaults.IconButtonWidthOption.Uniform
                         )
                     ),
-                shape = IconButtonDefaults.mediumRoundShape,
-                colors = IconButtonDefaults.filledIconButtonColors(),
+                shapes = IconButtonShapes(
+                    shape = IconButtonDefaults.largeRoundShape,
+                    pressedShape = IconButtonDefaults.largeSquareShape,
+                ),
+                colors = IconButtonDefaults.filledTonalIconButtonColors(),
                 onClick = { /* Next */ }
             ) {
                 Icon(
@@ -158,18 +170,21 @@ fun MusicPlayer() {
             IconButton(onClick = { /* Shuffle */ }) {
                 Icon(
                     painterResource(R.drawable.ic_shuffle),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     contentDescription = stringResource(R.string.shuffle)
                 )
             }
             IconButton(onClick = { /* Repeat */ }) {
                 Icon(
                     painterResource(R.drawable.ic_repeat),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     contentDescription = stringResource(R.string.repeat)
                 )
             }
             IconButton(onClick = { /* Queue */ }) {
                 Icon(
                     painterResource(R.drawable.ic_queue_music),
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     contentDescription = stringResource(R.string.queue)
                 )
             }
@@ -179,8 +194,10 @@ fun MusicPlayer() {
 
 @Composable
 @Preview(showSystemUi = true, showBackground = true)
+@PreviewLightDark
+@PreviewDynamicColors
 fun MusicPlayerPreview() {
-    OpenBardTheme(darkTheme = false) {
-        MusicPlayer()
+    OpenBardTheme {
+        MusicPlayer(isPlaying = true)
     }
 }
