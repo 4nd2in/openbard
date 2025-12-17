@@ -20,10 +20,5 @@ data class AppState(
 data class AppNavigation(
     val backStack: List<BackStackEntry> = listOf(BackStackEntry.Home)
 ) {
-    companion object {
-        val topLevelBackStackEntries = listOf(BackStackEntry.Home, BackStackEntry.Player)
-    }
-
     val currentBackStackEntry get() = backStack.lastOrNull()
-    val shouldShowNavigationSuite get() = currentBackStackEntry in topLevelBackStackEntries
 }

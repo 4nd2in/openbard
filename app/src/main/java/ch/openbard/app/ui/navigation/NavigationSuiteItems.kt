@@ -12,5 +12,5 @@ enum class NavigationSuiteItems(
     val backStackEntry: BackStackEntry,
 ) {
     HOME(R.string.home, R.drawable.ic_home, BackStackEntry.Home),
-    PLAYER(R.string.play, R.drawable.ic_play, BackStackEntry.Player)
+    SETTINGS(R.string.settings, R.drawable.ic_settings, BackStackEntry.Settings)
 }
