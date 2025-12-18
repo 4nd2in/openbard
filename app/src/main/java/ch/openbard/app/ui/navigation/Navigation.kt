@@ -1,5 +1,8 @@
 package ch.openbard.app.ui.navigation
 
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.recalculateWindowInsets
+import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi
@@ -44,7 +47,14 @@ fun Navigation(state: AppState, dispatch: (Action) -> Unit = {}) {
             }
         },
     ) {
-        Screens(state = state, dispatch = dispatch)
+        Screens(
+            Modifier
+                .fillMaxSize()
+                .recalculateWindowInsets()
+                .safeDrawingPadding(),
+            state = state,
+            dispatch = dispatch
+        )
     }
 }
 
