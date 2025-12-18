@@ -5,22 +5,31 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.tooling.preview.PreviewDynamicColors
-import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
+import ch.openbard.app.redux.Song
 import ch.openbard.app.ui.composables.SongList
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun Home(songs: List<String>, navigate: (String) -> Unit = {}) {
+fun Home(
+    songs: List<Song>,
+    navigate: (Song) -> Unit = {},
+) {
     SongList(Modifier.fillMaxSize(), songs, onItemClick = { navigate(it) })
 }
 
 @Composable
 @Preview(showBackground = true, showSystemUi = true)
-@PreviewLightDark
-@PreviewDynamicColors
 @PreviewScreenSizes
 fun HomePreview() {
-    Home(listOf("Test"))
+    Home(
+        listOf(
+            Song(
+                id = "1",
+                title = "Test Song",
+                artist = "Test Artist",
+                sourceUrl = "http://example.com",
+            ),
+        ),
+    )
 }

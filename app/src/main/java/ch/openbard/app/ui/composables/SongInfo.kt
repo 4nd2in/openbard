@@ -6,9 +6,16 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewDynamicColors
+import androidx.compose.ui.tooling.preview.PreviewLightDark
+import ch.openbard.app.ui.theme.OpenBardTheme
 
 @Composable
-fun SongInfo(title: String, artist: String) {
+fun SongInfo(
+    title: String,
+    artist: String,
+) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(
             text = title,
@@ -20,6 +27,19 @@ fun SongInfo(title: String, artist: String) {
             text = artist,
             style = MaterialTheme.typography.bodyLarge,
             color = MaterialTheme.colorScheme.onSurface,
+        )
+    }
+}
+
+@Composable
+@Preview
+@PreviewLightDark
+@PreviewDynamicColors
+fun SongInfoPreview() {
+    OpenBardTheme {
+        SongInfo(
+            title = "Test Song",
+            artist = "Test Artist",
         )
     }
 }

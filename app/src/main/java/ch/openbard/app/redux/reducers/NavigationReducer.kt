@@ -7,8 +7,14 @@ import ch.smoca.redux.Reducer
 
 class NavigationReducer : Reducer<AppState> {
     sealed class NavigationAction : Action {
-        data class UpdateBackStack(val backStack: List<BackStackEntry>) : NavigationAction()
-        data class PushToBackStack(val backStackEntry: BackStackEntry) : NavigationAction()
+        data class UpdateBackStack(
+            val backStack: List<BackStackEntry>,
+        ) : NavigationAction()
+
+        data class PushToBackStack(
+            val backStackEntry: BackStackEntry,
+        ) : NavigationAction()
+
         data object PopBackStack : NavigationAction()
     }
 

@@ -12,15 +12,14 @@ import androidx.compose.ui.platform.LocalContext
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun OpenBardTheme(
-    content: @Composable () -> Unit,
-) {
+fun OpenBardTheme(content: @Composable () -> Unit) {
     val context = LocalContext.current
-    val colorScheme = if (isSystemInDarkTheme()) {
-        dynamicDarkColorScheme(context)
-    } else {
-        dynamicLightColorScheme(context)
-    }
+    val colorScheme =
+        if (isSystemInDarkTheme()) {
+            dynamicDarkColorScheme(context)
+        } else {
+            dynamicLightColorScheme(context)
+        }
 
     MaterialExpressiveTheme(
         colorScheme = colorScheme,

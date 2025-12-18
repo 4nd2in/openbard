@@ -42,6 +42,13 @@ android {
     }
 }
 
+detekt {
+    buildUponDefaultConfig = true
+    allRules = true
+    config.setFrom("$projectDir/detekt.yml")
+    baseline = file("$projectDir/baseline.xml")
+}
+
 kotlin {
     compilerOptions {
         jvmTarget.set(JvmTarget.JVM_17)

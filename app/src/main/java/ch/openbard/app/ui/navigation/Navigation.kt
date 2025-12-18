@@ -15,7 +15,9 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
+import ch.openbard.app.R
 import ch.openbard.app.redux.AppState
+import ch.openbard.app.redux.Song
 import ch.openbard.app.redux.reducers.NavigationReducer
 import ch.openbard.app.ui.screens.Home
 import ch.openbard.app.ui.screens.MusicPlayer
@@ -23,37 +25,49 @@ import ch.openbard.app.ui.screens.Settings
 import ch.smoca.redux.Action
 
 @Composable
-fun Navigation(state: AppState, dispatch: (Action) -> Unit = {}) {
+fun AppNavigation(
+    state: AppState,
+    dispatch: (Action) -> Unit,
+    modifier: Modifier = Modifier,
+) {
     NavigationSuiteScaffold(
+        modifier = modifier,
         navigationSuiteItems = {
-            NavigationSuiteItems.entries.forEach { suiteItems ->
+            NavigationSuiteItems.entries.forEach { suiteItem ->
                 item(
                     icon = {
                         Icon(
-                            painterResource(suiteItems.icon),
-                            contentDescription = stringResource(suiteItems.labelRes)
+                            painter = painterResource(suiteItem.icon),
+                            contentDescription = stringResource(suiteItem.labelRes),
                         )
                     },
-                    label = { Text(stringResource(suiteItems.labelRes)) },
-                    selected = suiteItems.backStackEntry == state.navigation.currentBackStackEntry,
+                    label = { Text(stringResource(suiteItem.labelRes)) },
+                    selected = suiteItem.backStackEntry == state.navigation.currentBackStackEntry,
                     onClick = {
                         dispatch(
                             NavigationReducer.NavigationAction.PushToBackStack(
-                                backStackEntry = suiteItems.backStackEntry
-                            )
+                                backStackEntry = suiteItem.backStackEntry,
+                            ),
                         )
-                    }
+                    },
                 )
             }
         },
     ) {
         Screens(
-            Modifier
-                .fillMaxSize()
-                .recalculateWindowInsets()
-                .safeDrawingPadding(),
-            state = state,
-            dispatch = dispatch
+            songs = state.songs,
+            backStack = state.navigation.backStack,
+            onNavigate = { entry ->
+                dispatch(NavigationReducer.NavigationAction.PushToBackStack(entry))
+            },
+            onPopBackStack = {
+                dispatch(NavigationReducer.NavigationAction.PopBackStack)
+            },
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .recalculateWindowInsets()
+                    .safeDrawingPadding(),
         )
     }
 }
@@ -61,36 +75,42 @@ fun Navigation(state: AppState, dispatch: (Action) -> Unit = {}) {
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @Composable
 private fun Screens(
+    songs: List<Song>,
+    backStack: List<BackStackEntry>,
+    onNavigate: (BackStackEntry) -> Unit,
+    onPopBackStack: () -> Unit,
     modifier: Modifier = Modifier,
-    state: AppState,
-    dispatch: (Action) -> Unit = {},
 ) {
     val listDetailStrategy = rememberListDetailSceneStrategy<BackStackEntry>()
 
     NavDisplay(
         modifier = modifier,
-        backStack = state.navigation.backStack,
+        backStack = backStack,
         sceneStrategy = listDetailStrategy,
-        onBack = { dispatch(NavigationReducer.NavigationAction.PopBackStack) },
-        entryProvider = entryProvider {
-            entry<BackStackEntry.Home>(
-                metadata = ListDetailSceneStrategy.listPane(
-                    detailPlaceholder = {
-                        Text("Play a song")
-                    }
-                )) {
-                Home(listOf("song")) {
-                    dispatch(
-                        NavigationReducer.NavigationAction.PushToBackStack(BackStackEntry.Player)
+        onBack = onPopBackStack,
+        entryProvider =
+            entryProvider {
+                entry<BackStackEntry.Home>(
+                    metadata =
+                        ListDetailSceneStrategy.listPane(
+                            detailPlaceholder = {
+                                Text(stringResource(R.string.play_a_song))
+                            },
+                        ),
+                ) {
+                    Home(
+                        songs = songs,
+                        navigate = { _ -> onNavigate(BackStackEntry.Player) },
                     )
                 }
-            }
-            entry<BackStackEntry.Player>(metadata = ListDetailSceneStrategy.detailPane()) {
-                MusicPlayer(
-                    isPlaying = false
-                )
-            }
-            entry<BackStackEntry.Settings> { Settings() }
-        },
+                entry<BackStackEntry.Player>(
+                    metadata = ListDetailSceneStrategy.detailPane(),
+                ) {
+                    MusicPlayer(isPlaying = false)
+                }
+                entry<BackStackEntry.Settings> {
+                    Settings()
+                }
+            },
     )
 }

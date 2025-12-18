@@ -15,8 +15,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.tooling.preview.PreviewDynamicColors
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import ch.openbard.app.R
+import ch.openbard.app.ui.theme.OpenBardTheme
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -37,61 +41,81 @@ fun PlaybackControls(
             modifier =
                 Modifier.size(
                     IconButtonDefaults.largeContainerSize(
-                        IconButtonDefaults.IconButtonWidthOption.Uniform
-                    )
+                        IconButtonDefaults.IconButtonWidthOption.Uniform,
+                    ),
                 ),
-            shapes = IconButtonShapes(
-                shape = IconButtonDefaults.largeRoundShape,
-                pressedShape = IconButtonDefaults.largeSquareShape,
-            ),
+            shapes =
+                IconButtonShapes(
+                    shape = IconButtonDefaults.largeRoundShape,
+                    pressedShape = IconButtonDefaults.largeSquareShape,
+                ),
             colors = IconButtonDefaults.filledTonalIconButtonColors(),
-            onClick = onPrevious
+            onClick = onPrevious,
         ) {
             Icon(
                 painterResource(R.drawable.ic_previous),
-                contentDescription = stringResource(R.string.previous)
+                contentDescription = stringResource(R.string.previous),
             )
         }
         IconButton(
             modifier =
                 Modifier.size(
                     IconButtonDefaults.largeContainerSize(
-                        IconButtonDefaults.IconButtonWidthOption.Wide
-                    )
+                        IconButtonDefaults.IconButtonWidthOption.Wide,
+                    ),
                 ),
-            shapes = IconButtonShapes(
-                shape = IconButtonDefaults.largeSquareShape,
-                pressedShape = IconButtonDefaults.largeSquareShape,
-            ),
+            shapes =
+                IconButtonShapes(
+                    shape = IconButtonDefaults.largeSquareShape,
+                    pressedShape = IconButtonDefaults.largeSquareShape,
+                ),
             colors = IconButtonDefaults.filledIconButtonColors(),
-            onClick = onPlayPause
+            onClick = onPlayPause,
         ) {
             Icon(
-                if (isPlaying) painterResource(R.drawable.ic_pause) else painterResource(R.drawable.ic_play),
-                contentDescription = if (isPlaying) stringResource(R.string.pause) else stringResource(
-                    R.string.play
-                ),
-                modifier = Modifier.size(48.dp)
+                if (isPlaying) {
+                    painterResource(R.drawable.ic_pause)
+                } else {
+                    painterResource(R.drawable.ic_play)
+                },
+                contentDescription =
+                    if (isPlaying) {
+                        stringResource(R.string.pause)
+                    } else {
+                        stringResource(R.string.play)
+                    },
+                modifier = Modifier.size(48.dp),
             )
         }
         IconButton(
             modifier =
                 Modifier.size(
                     IconButtonDefaults.largeContainerSize(
-                        IconButtonDefaults.IconButtonWidthOption.Uniform
-                    )
+                        IconButtonDefaults.IconButtonWidthOption.Uniform,
+                    ),
                 ),
-            shapes = IconButtonShapes(
-                shape = IconButtonDefaults.largeRoundShape,
-                pressedShape = IconButtonDefaults.largeSquareShape,
-            ),
+            shapes =
+                IconButtonShapes(
+                    shape = IconButtonDefaults.largeRoundShape,
+                    pressedShape = IconButtonDefaults.largeSquareShape,
+                ),
             colors = IconButtonDefaults.filledTonalIconButtonColors(),
-            onClick = onNext
+            onClick = onNext,
         ) {
             Icon(
                 painterResource(R.drawable.ic_next),
-                contentDescription = stringResource(R.string.next)
+                contentDescription = stringResource(R.string.next),
             )
         }
+    }
+}
+
+@Composable
+@Preview
+@PreviewLightDark
+@PreviewDynamicColors
+fun PlaybackControlsPreview() {
+    OpenBardTheme {
+        PlaybackControls(isPlaying = false)
     }
 }

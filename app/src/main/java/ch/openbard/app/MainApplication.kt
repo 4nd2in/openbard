@@ -18,9 +18,10 @@ class MainApplication : Application() {
         store =
             Store(
                 initialState = loadState(),
-                reducers = listOf(
-                    NavigationReducer()
-                ),
+                reducers =
+                    listOf(
+                        NavigationReducer(),
+                    ),
                 sagas = listOf(),
                 middlewares =
                     listOf(
