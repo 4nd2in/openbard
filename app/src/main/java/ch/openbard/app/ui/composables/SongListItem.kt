@@ -1,6 +1,5 @@
 package ch.openbard.app.ui.composables
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
@@ -11,18 +10,17 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewDynamicColors
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
-import ch.openbard.app.R
 import ch.openbard.app.redux.Song
 import ch.openbard.app.ui.theme.OpenBardTheme
+import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import java.util.Locale
 
+@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun SongListItem(
     song: Song,
@@ -34,14 +32,11 @@ fun SongListItem(
                 .fillMaxWidth()
                 .clickable(onClick = onClick),
         leadingContent = {
-            Image(
-                painter = painterResource(R.drawable.ic_image),
-                contentDescription = null,
-                modifier =
-                    Modifier
-                        .size(56.dp)
-                        .clip(RoundedCornerShape(12.dp)),
-                contentScale = ContentScale.Crop,
+            AlbumArt(
+                modifier = Modifier
+                    .size(56.dp)
+                    .clip(RoundedCornerShape(12.dp)),
+                uri = song.artworkUrl,
             )
         },
         headlineContent = {
@@ -59,7 +54,7 @@ fun SongListItem(
             )
         },
         trailingContent = {
-            song.durationMs?.let { duration ->
+            song.duration?.let { duration ->
                 Text(
                     text = formatDuration(duration),
                     style = MaterialTheme.typography.labelMedium,
@@ -86,11 +81,11 @@ fun SongListItemPreview() {
     OpenBardTheme {
         SongListItem(
             Song(
-                id = "1",
+                id = 1,
                 title = "Test Song",
                 artist = "Test Artist",
                 sourceUrl = "http://example.com",
-                durationMs = 180000,
+                duration = 180000,
             ),
         )
     }

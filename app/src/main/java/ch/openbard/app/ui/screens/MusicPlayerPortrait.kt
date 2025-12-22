@@ -15,15 +15,13 @@ import androidx.compose.material3.Slider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.compose.ui.unit.dp
-import ch.openbard.app.R
+import ch.openbard.app.redux.Song
 import ch.openbard.app.ui.composables.AlbumArt
 import ch.openbard.app.ui.composables.PlaybackControls
 import ch.openbard.app.ui.composables.QueueControls
@@ -32,11 +30,15 @@ import ch.openbard.app.ui.composables.SongInfo
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun MusicPlayerPortrait(
+    song: Song,
+    progress: Long = 0,
     isPlaying: Boolean,
     onPlayPause: () -> Unit = {},
+    onSeek: (whereTo: Long) -> Unit = {},
+    onNext: () -> Unit = {},
+    onPrevious: () -> Unit = {},
 ) {
-    var isPlaying by remember { mutableStateOf(isPlaying) }
-    var progress by remember { mutableFloatStateOf(0f) }
+    var localProgress by remember(progress) { mutableFloatStateOf(progress.toFloat()) }
 
     Column(
         modifier =
@@ -50,22 +52,25 @@ fun MusicPlayerPortrait(
             modifier =
                 Modifier
                     .fillMaxWidth()
+                    .weight(1f)
                     .aspectRatio(1f),
-            painter = painterResource(id = R.drawable.ic_image),
+            uri = song.artworkUrl
         )
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        SongInfo("Title", "Artist")
+        SongInfo(song.title, song.artist)
 
         Spacer(modifier = Modifier.height(16.dp))
 
         Slider(
-            value = progress,
-            onValueChange = { progress = it },
+            value = localProgress,
+            valueRange = 0f..(song.duration ?: 0).toFloat(),
+            onValueChange = { localProgress = it },
+            onValueChangeFinished = { onSeek(localProgress.toLong()) },
         )
 
-        PlaybackControls(isPlaying, onPlayPause)
+        PlaybackControls(isPlaying, onPlayPause, onNext, onPrevious)
 
         QueueControls()
     }
@@ -75,5 +80,13 @@ fun MusicPlayerPortrait(
 @Preview(showSystemUi = true, showBackground = true)
 @PreviewScreenSizes
 fun MusicPlayerPortraitPreview() {
-    MusicPlayerPortrait(isPlaying = true)
+    MusicPlayerPortrait(
+        song = Song(
+            id = 1,
+            title = "Test Song",
+            artist = "Test Artist",
+            sourceUrl = "http://example.com",
+        ),
+        isPlaying = true,
+    )
 }

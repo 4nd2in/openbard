@@ -44,13 +44,13 @@ fun SongListPreview() {
             songs =
                 listOf(
                     Song(
-                        id = "1",
+                        id = 1,
                         title = "Test Song 1",
                         artist = "Test Artist 1",
                         sourceUrl = "http://example.com",
                     ),
                     Song(
-                        id = "2",
+                        id = 2,
                         title = "Test Song 2",
                         artist = "Test Artist 2",
                         sourceUrl = "http://example.com",

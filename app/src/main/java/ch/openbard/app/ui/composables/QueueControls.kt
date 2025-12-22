@@ -22,6 +22,7 @@ import ch.openbard.app.ui.theme.OpenBardTheme
 fun QueueControls(
     onShuffle: () -> Unit = {},
     onRepeat: () -> Unit = {},
+    onFavourite: () -> Unit = {},
     onQueue: () -> Unit = {},
 ) {
     Row(
@@ -43,6 +44,13 @@ fun QueueControls(
                 painterResource(R.drawable.ic_repeat),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 contentDescription = stringResource(R.string.repeat),
+            )
+        }
+        IconButton(onClick = onFavourite) {
+            Icon(
+                painterResource(R.drawable.ic_favourite),
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                contentDescription = stringResource(R.string.add_favourite),
             )
         }
         IconButton(onClick = onQueue) {

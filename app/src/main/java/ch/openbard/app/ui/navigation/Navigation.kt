@@ -10,6 +10,7 @@ import androidx.compose.material3.adaptive.navigation3.ListDetailSceneStrategy
 import androidx.compose.material3.adaptive.navigation3.rememberListDetailSceneStrategy
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -17,8 +18,8 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.ui.NavDisplay
 import ch.openbard.app.R
 import ch.openbard.app.redux.AppState
-import ch.openbard.app.redux.Song
 import ch.openbard.app.redux.reducers.NavigationReducer
+import ch.openbard.app.redux.sagas.PlayerSaga
 import ch.openbard.app.ui.screens.Home
 import ch.openbard.app.ui.screens.MusicPlayer
 import ch.openbard.app.ui.screens.Settings
@@ -55,19 +56,20 @@ fun AppNavigation(
         },
     ) {
         Screens(
-            songs = state.songs,
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .recalculateWindowInsets()
+                    .safeDrawingPadding(),
+            state = state,
             backStack = state.navigation.backStack,
+            dispatch = dispatch,
             onNavigate = { entry ->
                 dispatch(NavigationReducer.NavigationAction.PushToBackStack(entry))
             },
             onPopBackStack = {
                 dispatch(NavigationReducer.NavigationAction.PopBackStack)
             },
-            modifier =
-                Modifier
-                    .fillMaxSize()
-                    .recalculateWindowInsets()
-                    .safeDrawingPadding(),
         )
     }
 }
@@ -75,11 +77,12 @@ fun AppNavigation(
 @OptIn(ExperimentalMaterial3AdaptiveApi::class)
 @Composable
 private fun Screens(
-    songs: List<Song>,
-    backStack: List<BackStackEntry>,
-    onNavigate: (BackStackEntry) -> Unit,
-    onPopBackStack: () -> Unit,
     modifier: Modifier = Modifier,
+    state: AppState,
+    backStack: List<BackStackEntry>,
+    dispatch: (Action) -> Unit = {},
+    onNavigate: (BackStackEntry) -> Unit = {},
+    onPopBackStack: () -> Unit = {},
 ) {
     val listDetailStrategy = rememberListDetailSceneStrategy<BackStackEntry>()
 
@@ -99,14 +102,33 @@ private fun Screens(
                         ),
                 ) {
                     Home(
-                        songs = songs,
+                        songs = state.songs,
                         navigate = { _ -> onNavigate(BackStackEntry.Player) },
                     )
                 }
                 entry<BackStackEntry.Player>(
                     metadata = ListDetailSceneStrategy.detailPane(),
                 ) {
-                    MusicPlayer(isPlaying = false)
+                    LaunchedEffect(state.songs) {
+                        if (state.songs.isNotEmpty()) {
+                            dispatch(PlayerSaga.PlayerAction.SetDataSource(state.songs.first().sourceUrl))
+                        }
+                    }
+                    MusicPlayer(
+                        state.songs.first(),
+                        isPlaying = state.player.isPlaying,
+                        progress = state.player.position,
+                        onPlayPause = {
+                            if (state.player.isPlaying) dispatch(PlayerSaga.PlayerAction.Pause) else dispatch(
+                                PlayerSaga.PlayerAction.Play
+                            )
+                        },
+                        onSeek = {
+                            dispatch(PlayerSaga.PlayerAction.Seek(it))
+                        },
+                        onNext = {},
+                        onPrevious = {}
+                    )
                 }
                 entry<BackStackEntry.Settings> {
                     Settings()

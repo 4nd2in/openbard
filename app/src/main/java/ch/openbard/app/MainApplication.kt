@@ -5,6 +5,10 @@ import android.util.Log
 import ch.openbard.app.redux.AppState
 import ch.openbard.app.redux.middlewares.LoggerMiddleware
 import ch.openbard.app.redux.reducers.NavigationReducer
+import ch.openbard.app.redux.reducers.PlayerReducer
+import ch.openbard.app.redux.reducers.SongsReducer
+import ch.openbard.app.redux.sagas.PlayerSaga
+import ch.openbard.app.redux.sagas.SongsFinderSaga
 import ch.smoca.redux.Store
 import kotlinx.serialization.SerializationException
 import kotlinx.serialization.json.Json
@@ -21,8 +25,13 @@ class MainApplication : Application() {
                 reducers =
                     listOf(
                         NavigationReducer(),
+                        SongsReducer(),
+                        PlayerReducer(),
                     ),
-                sagas = listOf(),
+                sagas = listOf(
+                    SongsFinderSaga(this),
+                    PlayerSaga(this),
+                ),
                 middlewares =
                     listOf(
                         LoggerMiddleware(),

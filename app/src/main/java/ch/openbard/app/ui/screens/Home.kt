@@ -1,8 +1,12 @@
 package ch.openbard.app.ui.screens
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
@@ -15,6 +19,15 @@ fun Home(
     songs: List<Song>,
     navigate: (Song) -> Unit = {},
 ) {
+    if (songs.isEmpty()) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            CircularProgressIndicator()
+        }
+    }
     SongList(Modifier.fillMaxSize(), songs, onItemClick = { navigate(it) })
 }
 
@@ -25,7 +38,7 @@ fun HomePreview() {
     Home(
         listOf(
             Song(
-                id = "1",
+                id = 1,
                 title = "Test Song",
                 artist = "Test Artist",
                 sourceUrl = "http://example.com",

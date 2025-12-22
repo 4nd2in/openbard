@@ -1,6 +1,5 @@
 package ch.openbard.app.ui.composables
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
@@ -11,20 +10,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewDynamicColors
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
-import ch.openbard.app.R
 import ch.openbard.app.ui.theme.OpenBardTheme
 
 @Composable
 fun AlbumArt(
     modifier: Modifier = Modifier,
-    painter: Painter,
+    uri: String? = null,
 ) {
     Box(
         modifier =
@@ -33,11 +28,9 @@ fun AlbumArt(
                 .background(MaterialTheme.colorScheme.secondary),
         contentAlignment = Alignment.Center,
     ) {
-        Image(
+        AsyncImage(
             modifier = Modifier.fillMaxSize(),
-            painter = painter,
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
+            uri = uri,
         )
     }
 }
@@ -50,7 +43,6 @@ fun AlbumArtPreview() {
     OpenBardTheme {
         AlbumArt(
             modifier = Modifier.aspectRatio(1f),
-            painter = painterResource(id = R.drawable.ic_image),
         )
     }
 }
