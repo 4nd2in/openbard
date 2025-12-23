@@ -25,7 +25,8 @@ material3AdaptiveNavigationSuite = "1.4.0"
 foundationLayout = "1.10.0"
 runtime = "1.10.0"
 media3Session = "1.9.0"
-glide = "1.0.0-beta01"
+glide-compose = "1.0.0-beta01"
+glide = "5.0.5"
 
 [libraries]
 androidx-animation = { module = "androidx.compose.animation:animation" }
@@ -57,7 +58,8 @@ smoca-redux = { module = "ch.smoca.lib:lightweight-kotlin-redux", version.ref = 
 androidx-compose-foundation-layout = { group = "androidx.compose.foundation", name = "foundation-layout", version.ref = "foundationLayout" }
 androidx-compose-runtime = { group = "androidx.compose.runtime", name = "runtime", version.ref = "runtime" }
 androidx-media3-session = { group = "androidx.media3", name = "media3-session", version.ref = "media3Session" }
-bumptech-glide = { group = "com.github.bumptech.glide", name = "compose", version.ref = "glide"}
+bumptech-glide = { module = "com.github.bumptech.glide:glide", version.ref = "glide"}
+bumptech-glide-compose = { module = "com.github.bumptech.glide:compose", version.ref = "glide-compose"}
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

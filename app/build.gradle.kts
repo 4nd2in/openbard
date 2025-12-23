@@ -92,6 +92,7 @@ dependencies {
     implementation(libs.androidx.media3.ui.compose)
 
     implementation(libs.bumptech.glide)
+    implementation(libs.bumptech.glide.compose)
 
     implementation(libs.smoca.redux)
 }
