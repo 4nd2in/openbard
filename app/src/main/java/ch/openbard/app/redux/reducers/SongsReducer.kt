@@ -8,7 +8,7 @@ import ch.smoca.redux.Reducer
 class SongsReducer : Reducer<AppState> {
     sealed class SongsAction : Action {
         data class UpdateSongs(
-            val songs: List<Song>,
+            val songs: Map<Long, Song>,
         ) : SongsAction()
 
         data class UpdateLastScan(

@@ -16,8 +16,8 @@ import ch.openbard.app.ui.composables.SongList
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun Home(
-    songs: List<Song>,
-    navigate: (Song) -> Unit = {},
+    songs: Map<Long, Song>,
+    navigate: (Long) -> Unit = {},
 ) {
     if (songs.isEmpty()) {
         Column(
@@ -36,9 +36,8 @@ fun Home(
 @PreviewScreenSizes
 fun HomePreview() {
     Home(
-        listOf(
-            Song(
-                id = 1,
+        mapOf(
+            1L to Song(
                 title = "Test Song",
                 artist = "Test Artist",
                 sourceUrl = "http://example.com",

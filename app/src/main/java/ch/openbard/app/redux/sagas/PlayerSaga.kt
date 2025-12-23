@@ -24,7 +24,6 @@ class PlayerSaga(context: Context) : Saga<AppState>(), Player.Listener {
         data object Stop : PlayerAction()
         data object Release : PlayerAction()
         data object UpdatePosition : PlayerAction()
-        data class SetDataSource(val sourceUrl: String) : PlayerAction()
     }
 
     private val mainHandler = Handler(Looper.getMainLooper())
@@ -41,8 +40,6 @@ class PlayerSaga(context: Context) : Saga<AppState>(), Player.Listener {
         oldState: AppState,
         newState: AppState,
     ) {
-        if (action !is PlayerAction) return
-
         when (action) {
             PlayerAction.Play -> play()
             PlayerAction.Pause -> pause()
@@ -50,7 +47,9 @@ class PlayerSaga(context: Context) : Saga<AppState>(), Player.Listener {
             PlayerAction.Stop -> stop()
             PlayerAction.Release -> release()
             PlayerAction.UpdatePosition -> position(newState.player.isInitialized)
-            is PlayerAction.SetDataSource -> setDataSource(action.sourceUrl)
+            is PlayerReducer.PlayerAction.UpdateSongId -> {
+                newState.songs[action.songId]?.sourceUrl?.let { setDataSource(it) }
+            }
         }
     }
 
@@ -77,6 +76,7 @@ class PlayerSaga(context: Context) : Saga<AppState>(), Player.Listener {
                             if (state == Player.STATE_READY) {
                                 player.removeListener(this)
                                 dispatch(PlayerReducer.PlayerAction.UpdateIsInitialized(true))
+                                play()
                             }
                         }
                     },
@@ -133,10 +133,8 @@ class PlayerSaga(context: Context) : Saga<AppState>(), Player.Listener {
             mainHandler.post {
                 player.seekTo(whereto)
             }
-            true
         } catch (e: IllegalStateException) {
             Log.e("${javaClass.simpleName}", "${e.message}")
-            false
         }
     }
 

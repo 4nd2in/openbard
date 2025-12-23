@@ -10,7 +10,6 @@ import androidx.compose.material3.adaptive.navigation3.ListDetailSceneStrategy
 import androidx.compose.material3.adaptive.navigation3.rememberListDetailSceneStrategy
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -19,6 +18,7 @@ import androidx.navigation3.ui.NavDisplay
 import ch.openbard.app.R
 import ch.openbard.app.redux.AppState
 import ch.openbard.app.redux.reducers.NavigationReducer
+import ch.openbard.app.redux.reducers.PlayerReducer
 import ch.openbard.app.redux.sagas.PlayerSaga
 import ch.openbard.app.ui.screens.Home
 import ch.openbard.app.ui.screens.MusicPlayer
@@ -103,19 +103,17 @@ private fun Screens(
                 ) {
                     Home(
                         songs = state.songs,
-                        navigate = { _ -> onNavigate(BackStackEntry.Player) },
+                        navigate = { songId ->
+                            dispatch(PlayerReducer.PlayerAction.UpdateSongId(songId))
+                            onNavigate(BackStackEntry.Player)
+                        },
                     )
                 }
                 entry<BackStackEntry.Player>(
                     metadata = ListDetailSceneStrategy.detailPane(),
                 ) {
-                    LaunchedEffect(state.songs) {
-                        if (state.songs.isNotEmpty()) {
-                            dispatch(PlayerSaga.PlayerAction.SetDataSource(state.songs.first().sourceUrl))
-                        }
-                    }
                     MusicPlayer(
-                        state.songs.first(),
+                        song = state.songs[state.player.songId],
                         isPlaying = state.player.isPlaying,
                         progress = state.player.position,
                         onPlayPause = {

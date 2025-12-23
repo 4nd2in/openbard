@@ -3,6 +3,7 @@ package ch.openbard.app.ui.composables
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -15,20 +16,21 @@ import ch.openbard.app.ui.theme.OpenBardTheme
 @Composable
 fun SongList(
     modifier: Modifier = Modifier,
-    songs: List<Song>,
-    onItemClick: (Song) -> Unit = {},
+    songs: Map<Long, Song>,
+    onItemClick: (Long) -> Unit = {},
 ) {
+    val lazyListState = rememberLazyListState()
+    val entries = songs.entries.toList()
+
     LazyColumn(
         modifier = modifier,
+        state = lazyListState,
         contentPadding = PaddingValues(vertical = 8.dp),
     ) {
-        items(
-            items = songs,
-            key = { it.id },
-        ) { song ->
+        items(entries) { (id, song) ->
             SongListItem(
                 song = song,
-                onClick = { onItemClick(song) },
+                onClick = { onItemClick(id) },
             )
         }
     }
@@ -42,15 +44,13 @@ fun SongListPreview() {
     OpenBardTheme {
         SongList(
             songs =
-                listOf(
-                    Song(
-                        id = 1,
+                mapOf(
+                    1L to Song(
                         title = "Test Song 1",
                         artist = "Test Artist 1",
                         sourceUrl = "http://example.com",
                     ),
-                    Song(
-                        id = 2,
+                    2L to Song(
                         title = "Test Song 2",
                         artist = "Test Artist 2",
                         sourceUrl = "http://example.com",

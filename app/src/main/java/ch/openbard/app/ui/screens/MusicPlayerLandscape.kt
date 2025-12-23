@@ -82,7 +82,6 @@ fun MusicPlayerLandscape(
 fun MusicPlayerLandscapePreview() {
     MusicPlayerLandscape(
         song = Song(
-            id = 1,
             title = "Test Song",
             artist = "Test Artist",
             sourceUrl = "http://example.com",

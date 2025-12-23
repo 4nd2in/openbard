@@ -81,7 +81,6 @@ fun SongListItemPreview() {
     OpenBardTheme {
         SongListItem(
             Song(
-                id = 1,
                 title = "Test Song",
                 artist = "Test Artist",
                 sourceUrl = "http://example.com",

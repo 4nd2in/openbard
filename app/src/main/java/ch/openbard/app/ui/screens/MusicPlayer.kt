@@ -1,8 +1,14 @@
 package ch.openbard.app.ui.screens
 
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_EXPANDED_LOWER_BOUND
@@ -11,7 +17,7 @@ import ch.openbard.app.redux.Song
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun MusicPlayer(
-    song: Song,
+    song: Song?,
     isPlaying: Boolean,
     progress: Long,
     onPlayPause: () -> Unit = {},
@@ -19,10 +25,20 @@ fun MusicPlayer(
     onNext: () -> Unit = {},
     onPrevious: () -> Unit = {},
 ) {
-    if (isScreenWide()) {
-        MusicPlayerLandscape(song, progress, isPlaying, onPlayPause, onSeek, onNext, onPrevious)
+    if (song == null) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            CircularProgressIndicator()
+        }
     } else {
-        MusicPlayerPortrait(song, progress, isPlaying, onPlayPause, onSeek, onNext, onPrevious)
+        if (isScreenWide()) {
+            MusicPlayerLandscape(song, progress, isPlaying, onPlayPause, onSeek, onNext, onPrevious)
+        } else {
+            MusicPlayerPortrait(song, progress, isPlaying, onPlayPause, onSeek, onNext, onPrevious)
+        }
     }
 }
 
@@ -38,7 +54,6 @@ private fun isScreenWide(): Boolean {
 fun MusicPlayerPreview() {
     MusicPlayer(
         song = Song(
-            id = 1,
             title = "Test Song",
             artist = "Test Artist",
             sourceUrl = "http://example.com",

@@ -11,7 +11,7 @@ import kotlinx.serialization.Transient
 data class AppState(
     @Transient
     val navigation: AppNavigation = AppNavigation(),
-    val songs: List<Song> = emptyList(),
+    val songs: Map<Long, Song> = emptyMap(),
     val lastScannedAt: Long = 0,
     @Transient
     val player: Player = Player(),
@@ -30,7 +30,6 @@ data class AppNavigation(
 @Immutable
 @Serializable
 data class Song(
-    val id: Long,
     val title: String,
     val artist: String,
     val sourceUrl: String,
@@ -47,6 +46,7 @@ data class Song(
 
 @Immutable
 data class Player(
+    val songId: Long? = null,
     val isInitialized: Boolean = false,
     val isPlaying: Boolean = false,
     val position: Long = 0,

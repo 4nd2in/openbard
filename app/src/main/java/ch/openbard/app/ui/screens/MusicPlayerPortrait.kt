@@ -82,7 +82,6 @@ fun MusicPlayerPortrait(
 fun MusicPlayerPortraitPreview() {
     MusicPlayerPortrait(
         song = Song(
-            id = 1,
             title = "Test Song",
             artist = "Test Artist",
             sourceUrl = "http://example.com",
