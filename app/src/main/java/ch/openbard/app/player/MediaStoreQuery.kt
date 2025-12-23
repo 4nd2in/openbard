@@ -4,7 +4,6 @@ import android.content.ContentResolver
 import android.content.ContentUris
 import android.content.Context
 import android.database.ContentObserver
-import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
@@ -12,7 +11,6 @@ import android.util.Log
 import ch.openbard.app.redux.Song
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import java.io.File
 
 class MediaStoreQuery(
     lastScannedAt: Long,
@@ -26,19 +24,21 @@ class MediaStoreQuery(
             MediaStore.Audio.Media.TITLE,
             MediaStore.Audio.Media.ARTIST,
             MediaStore.Audio.Media.ALBUM,
-            MediaStore.Audio.Media.ALBUM_ARTIST,
+            MediaStore.Audio.Media.ALBUM_ID,
             MediaStore.Audio.Media.DURATION,
             MediaStore.Audio.Media.YEAR,
             MediaStore.Audio.Media.TRACK,
             MediaStore.Audio.Media.GENRE,
         )
 
+    // do not query music files shorter than 30s
     private val queryArgs =
         Bundle().apply {
             putString(
                 ContentResolver.QUERY_ARG_SQL_SELECTION,
                 """
                 ${MediaStore.Audio.Media.IS_MUSIC} != 0 AND
+                ${MediaStore.Audio.Media.DURATION} >= 30000 AND 
                 (${MediaStore.Audio.Media.DATE_ADDED} > ? OR
                  ${MediaStore.Audio.Media.DATE_MODIFIED} > ?)
                 """.trimIndent(),
@@ -59,53 +59,53 @@ class MediaStoreQuery(
         }
 
     @Suppress("LongMethod")
-    suspend fun query(context: Context): List<Song> =
+    suspend fun query(context: Context): Map<Long, Song> =
         withContext(Dispatchers.IO) {
-            val songs = mutableListOf<Song>()
-            context.contentResolver
-                .query(
-                    MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
+            val songs = mutableMapOf<Long, Song>()
+
+            val collection = MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
+
+            try {
+                context.contentResolver.query(
+                    collection,
                     projection,
                     queryArgs,
                     null,
                 )?.use { cursor ->
-
                     val idCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
                     val titleCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE)
                     val artistCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
                     val albumCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM)
+                    val albumIdCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID)
                     val durationCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION)
                     val yearCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.YEAR)
                     val trackCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TRACK)
-                    val genreCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.GENRE)
+                    val genreCol = cursor.getColumnIndex(MediaStore.Audio.Media.GENRE)
 
                     while (cursor.moveToNext()) {
                         val id = cursor.getLong(idCol)
-                        val contentUri =
-                            ContentUris.withAppendedId(
-                                MediaStore.Audio.Media.EXTERNAL_CONTENT_URI,
-                                id,
-                            )
+                        val albumId = cursor.getLong(albumIdCol)
 
-                        val artworkUrl: String? = readArtwork(context, id, contentUri)
+                        val contentUri = ContentUris.withAppendedId(collection, id)
+                        val artworkUri = getAlbumArtUri(albumId)
 
-                        songs.add(
+                        songs[id] =
                             Song(
-                                id = cursor.getLong(idCol),
-                                title = cursor.getString(titleCol),
-                                artist = cursor.getString(artistCol),
-                                album = cursor.getString(albumCol),
+                                title = cursor.getString(titleCol) ?: "<unknown>",
+                                artist = cursor.getString(artistCol) ?: "<unknown>",
+                                album = cursor.getString(albumCol) ?: "<unknown>",
                                 duration = cursor.getLong(durationCol),
                                 sourceUrl = contentUri.toString(),
                                 year = cursor.getInt(yearCol),
                                 trackNumber = cursor.getInt(trackCol),
-                                genre = cursor.getString(genreCol),
-                                artworkUrl = artworkUrl,
-                            ),
-                        )
-                        Log.i("MediaQuery", "New Song: ${songs.last().title}")
+                                genre = if (genreCol != -1) cursor.getString(genreCol) else null,
+                                artworkUrl = artworkUri.toString(),
+                            )
                     }
                 }
+            } catch (e: Exception) {
+                Log.e("MediaQuery", "Error querying music", e)
+            }
             songs
         }
 
@@ -127,32 +127,10 @@ class MediaStoreQuery(
         context.contentResolver.unregisterContentObserver(observer)
     }
 
-    private fun readArtwork(context: Context, songId: Long, contentUri: Uri): String? {
-        val retriever = MediaMetadataRetriever()
-
-        return try {
-            retriever.setDataSource(context, contentUri)
-            retriever.embeddedPicture?.let {
-                saveArtwork(context, songId, it)
-            }
-        } catch (e: IllegalArgumentException) {
-            Log.e("${javaClass.simpleName}", "${e.message}")
-            null
-        } catch (e: SecurityException) {
-            Log.e("${javaClass.simpleName}", "${e.message}")
-            null
-        } finally {
-            retriever.release()
-        }
-    }
-
-    private fun saveArtwork(
-        context: Context,
-        songId: Long,
-        bytes: ByteArray,
-    ): String {
-        val file = File(context.cacheDir, "art_$songId.jpg")
-        file.outputStream().use { it.write(bytes) }
-        return file.toURI().toString()
+    private fun getAlbumArtUri(albumId: Long): Uri {
+        return ContentUris.withAppendedId(
+            Uri.parse("content://media/external/audio/albumart"),
+            albumId
+        )
     }
 }
