@@ -9,12 +9,15 @@ import kotlinx.serialization.Transient
 @Immutable
 @Serializable
 data class AppState(
-    @Transient
-    val navigation: AppNavigation = AppNavigation(),
     val songs: Map<Long, Song> = emptyMap(),
+    val favourites: Set<Long> = emptySet(),
     val lastScannedAt: Long = 0,
     @Transient
+    val navigation: AppNavigation = AppNavigation(),
+    @Transient
     val player: Player = Player(),
+    @Transient
+    val permissions: Permissions = Permissions(),
 ) : State {
     companion object {
         const val FILE_NAME = "state.json"
@@ -46,8 +49,16 @@ data class Song(
 
 @Immutable
 data class Player(
-    val songId: Long? = null,
     val isInitialized: Boolean = false,
     val isPlaying: Boolean = false,
-    val position: Long = 0,
+    val isRepeatOn: Boolean = false,
+    val isShuffleOn: Boolean = false,
+    val currentPlaylist: List<Long> = emptyList(),
+    val currentlyPlayingSongId: Long? = null,
+    val currentlyPlayingSongProgress: Long = 0,
+)
+
+@Immutable
+data class Permissions(
+    val canReadMediaAudio: Boolean = false,
 )

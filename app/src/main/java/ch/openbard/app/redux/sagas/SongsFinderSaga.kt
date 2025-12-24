@@ -1,16 +1,29 @@
 package ch.openbard.app.redux.sagas
 
 import android.content.Context
+import android.database.ContentObserver
+import android.os.Handler
+import android.os.Looper
 import ch.openbard.app.player.MediaStoreQuery
 import ch.openbard.app.redux.AppState
 import ch.openbard.app.redux.reducers.SongsReducer
 import ch.smoca.redux.Action
 import ch.smoca.redux.sagas.Saga
 
-class SongsFinderSaga(private val context: Context) : Saga<AppState>() {
+class SongsFinderSaga(
+    private val context: Context,
+) : Saga<AppState>() {
     sealed class SongsFinderAction : Action {
         object Query : SongsFinderAction()
     }
+
+    private val contentObserver =
+        object : ContentObserver(Handler(Looper.getMainLooper())) {
+            override fun onChange(selfChange: Boolean) {
+                super.onChange(selfChange)
+                dispatch(SongsFinderAction.Query)
+            }
+        }
 
     override suspend fun onAction(
         action: Action,
@@ -22,6 +35,7 @@ class SongsFinderSaga(private val context: Context) : Saga<AppState>() {
         when (action) {
             SongsFinderAction.Query -> {
                 val mediaStoreQuery = MediaStoreQuery(newState.lastScannedAt)
+                mediaStoreQuery.registerObserver(context, contentObserver)
                 val newSongs = mediaStoreQuery.query(context)
                 dispatch(SongsReducer.SongsAction.UpdateLastScan(System.currentTimeMillis()))
                 dispatch(SongsReducer.SongsAction.UpdateSongs(newSongs))

@@ -15,10 +15,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewDynamicColors
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
+import ch.openbard.app.helper.TimeFormatter.formatDuration
 import ch.openbard.app.redux.Song
 import ch.openbard.app.ui.theme.OpenBardTheme
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
-import java.util.Locale
 
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
@@ -33,9 +33,10 @@ fun SongListItem(
                 .clickable(onClick = onClick),
         leadingContent = {
             AlbumArt(
-                modifier = Modifier
-                    .size(56.dp)
-                    .clip(RoundedCornerShape(12.dp)),
+                modifier =
+                    Modifier
+                        .size(56.dp)
+                        .clip(RoundedCornerShape(12.dp)),
                 uri = song.artworkUrl,
             )
         },
@@ -63,14 +64,6 @@ fun SongListItem(
             }
         },
     )
-}
-
-@Suppress("MagicNumber")
-private fun formatDuration(durationMs: Long): String {
-    val totalSeconds = durationMs / 1000
-    val minutes = totalSeconds / 60
-    val seconds = totalSeconds % 60
-    return String.format(Locale.US, "%d:%02d", minutes, seconds)
 }
 
 @Composable

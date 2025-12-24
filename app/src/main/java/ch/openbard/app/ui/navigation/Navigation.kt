@@ -19,7 +19,6 @@ import ch.openbard.app.R
 import ch.openbard.app.redux.AppState
 import ch.openbard.app.redux.reducers.NavigationReducer
 import ch.openbard.app.redux.reducers.PlayerReducer
-import ch.openbard.app.redux.sagas.PlayerSaga
 import ch.openbard.app.ui.screens.Home
 import ch.openbard.app.ui.screens.MusicPlayer
 import ch.openbard.app.ui.screens.Settings
@@ -104,7 +103,12 @@ private fun Screens(
                     Home(
                         songs = state.songs,
                         navigate = { songId ->
-                            dispatch(PlayerReducer.PlayerAction.UpdateSongId(songId))
+                            dispatch(PlayerReducer.PlayerStateAction.UpdateCurrentSong(songId))
+                            dispatch(
+                                PlayerReducer.PlayerStateAction.UpdateCurrentPlaylist(
+                                    state.songs.keys.toList()
+                                )
+                            )
                             onNavigate(BackStackEntry.Player)
                         },
                     )
@@ -112,21 +116,7 @@ private fun Screens(
                 entry<BackStackEntry.Player>(
                     metadata = ListDetailSceneStrategy.detailPane(),
                 ) {
-                    MusicPlayer(
-                        song = state.songs[state.player.songId],
-                        isPlaying = state.player.isPlaying,
-                        progress = state.player.position,
-                        onPlayPause = {
-                            if (state.player.isPlaying) dispatch(PlayerSaga.PlayerAction.Pause) else dispatch(
-                                PlayerSaga.PlayerAction.Play
-                            )
-                        },
-                        onSeek = {
-                            dispatch(PlayerSaga.PlayerAction.Seek(it))
-                        },
-                        onNext = {},
-                        onPrevious = {}
-                    )
+                    MusicPlayer(state, dispatch)
                 }
                 entry<BackStackEntry.Settings> {
                     Settings()

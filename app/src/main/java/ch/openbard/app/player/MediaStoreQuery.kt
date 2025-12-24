@@ -58,7 +58,7 @@ class MediaStoreQuery(
             )
         }
 
-    @Suppress("LongMethod")
+    @Suppress("LongMethod", "TooGenericExceptionCaught")
     suspend fun query(context: Context): Map<Long, Song> =
         withContext(Dispatchers.IO) {
             val songs = mutableMapOf<Long, Song>()
@@ -66,43 +66,50 @@ class MediaStoreQuery(
             val collection = MediaStore.Audio.Media.getContentUri(MediaStore.VOLUME_EXTERNAL)
 
             try {
-                context.contentResolver.query(
-                    collection,
-                    projection,
-                    queryArgs,
-                    null,
-                )?.use { cursor ->
-                    val idCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
-                    val titleCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE)
-                    val artistCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
-                    val albumCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM)
-                    val albumIdCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID)
-                    val durationCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION)
-                    val yearCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.YEAR)
-                    val trackCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TRACK)
-                    val genreCol = cursor.getColumnIndex(MediaStore.Audio.Media.GENRE)
+                context.contentResolver
+                    .query(
+                        collection,
+                        projection,
+                        queryArgs,
+                        null,
+                    )?.use { cursor ->
+                        val idCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media._ID)
+                        val titleCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TITLE)
+                        val artistCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ARTIST)
+                        val albumCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM)
+                        val albumIdCol =
+                            cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.ALBUM_ID)
+                        val durationCol =
+                            cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.DURATION)
+                        val yearCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.YEAR)
+                        val trackCol = cursor.getColumnIndexOrThrow(MediaStore.Audio.Media.TRACK)
+                        val genreCol = cursor.getColumnIndex(MediaStore.Audio.Media.GENRE)
 
-                    while (cursor.moveToNext()) {
-                        val id = cursor.getLong(idCol)
-                        val albumId = cursor.getLong(albumIdCol)
+                        while (cursor.moveToNext()) {
+                            val id = cursor.getLong(idCol)
+                            val albumId = cursor.getLong(albumIdCol)
 
-                        val contentUri = ContentUris.withAppendedId(collection, id)
-                        val artworkUri = getAlbumArtUri(albumId)
+                            val contentUri = ContentUris.withAppendedId(collection, id)
+                            val artworkUri = getAlbumArtUri(albumId)
 
-                        songs[id] =
-                            Song(
-                                title = cursor.getString(titleCol) ?: "<unknown>",
-                                artist = cursor.getString(artistCol) ?: "<unknown>",
-                                album = cursor.getString(albumCol) ?: "<unknown>",
-                                duration = cursor.getLong(durationCol),
-                                sourceUrl = contentUri.toString(),
-                                year = cursor.getInt(yearCol),
-                                trackNumber = cursor.getInt(trackCol),
-                                genre = if (genreCol != -1) cursor.getString(genreCol) else null,
-                                artworkUrl = artworkUri.toString(),
-                            )
+                            songs[id] =
+                                Song(
+                                    title = cursor.getString(titleCol) ?: "?",
+                                    artist = cursor.getString(artistCol) ?: "?",
+                                    album = cursor.getString(albumCol) ?: "?",
+                                    duration = cursor.getLong(durationCol),
+                                    sourceUrl = contentUri.toString(),
+                                    year = cursor.getInt(yearCol),
+                                    trackNumber = cursor.getInt(trackCol),
+                                    genre =
+                                        if (genreCol != -1)
+                                            cursor.getString(genreCol)
+                                        else
+                                            null,
+                                    artworkUrl = artworkUri.toString(),
+                                )
+                        }
                     }
-                }
             } catch (e: Exception) {
                 Log.e("MediaQuery", "Error querying music", e)
             }
@@ -127,10 +134,9 @@ class MediaStoreQuery(
         context.contentResolver.unregisterContentObserver(observer)
     }
 
-    private fun getAlbumArtUri(albumId: Long): Uri {
-        return ContentUris.withAppendedId(
+    private fun getAlbumArtUri(albumId: Long): Uri =
+        ContentUris.withAppendedId(
             Uri.parse("content://media/external/audio/albumart"),
-            albumId
+            albumId,
         )
-    }
 }

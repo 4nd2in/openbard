@@ -45,16 +45,18 @@ fun SongListPreview() {
         SongList(
             songs =
                 mapOf(
-                    1L to Song(
-                        title = "Test Song 1",
-                        artist = "Test Artist 1",
-                        sourceUrl = "http://example.com",
-                    ),
-                    2L to Song(
-                        title = "Test Song 2",
-                        artist = "Test Artist 2",
-                        sourceUrl = "http://example.com",
-                    ),
+                    1L to
+                        Song(
+                            title = "Test Song 1",
+                            artist = "Test Artist 1",
+                            sourceUrl = "http://example.com",
+                        ),
+                    2L to
+                        Song(
+                            title = "Test Song 2",
+                            artist = "Test Artist 2",
+                            sourceUrl = "http://example.com",
+                        ),
                 ),
         )
     }

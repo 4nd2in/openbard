@@ -12,19 +12,42 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import androidx.window.core.layout.WindowSizeClass.Companion.WIDTH_DP_EXPANDED_LOWER_BOUND
+import ch.openbard.app.redux.AppState
 import ch.openbard.app.redux.Song
+import ch.openbard.app.redux.reducers.FavouritesReducer
+import ch.openbard.app.redux.sagas.PlayerSaga
+import ch.smoca.redux.Action
+import kotlin.collections.get
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun MusicPlayer(
-    song: Song?,
-    isPlaying: Boolean,
-    progress: Long,
-    onPlayPause: () -> Unit = {},
-    onSeek: (whereTo: Long) -> Unit = {},
-    onNext: () -> Unit = {},
-    onPrevious: () -> Unit = {},
+    state: AppState,
+    dispatch: (Action) -> Unit = {},
 ) {
+    val song = state.songs[state.player.currentlyPlayingSongId]
+    val isFavourite = state.player.currentlyPlayingSongId in state.favourites
+    val onPlayPause = {
+        if (state.player.isPlaying)
+            dispatch(PlayerSaga.PlayerAction.Pause)
+        else
+            dispatch(PlayerSaga.PlayerAction.Play)
+    }
+    val onSeek: (Long) -> Unit = { dispatch(PlayerSaga.PlayerAction.SeekTo(it)) }
+    val onNext = { dispatch(PlayerSaga.PlayerAction.SeekToNext) }
+    val onPrevious = { dispatch(PlayerSaga.PlayerAction.SeekToPrevious) }
+    val onShuffle: (Boolean) -> Unit = { dispatch(PlayerSaga.PlayerAction.SetShuffleMode(it)) }
+    val onRepeat: (Boolean) -> Unit = { dispatch(PlayerSaga.PlayerAction.SetRepeatMode(it)) }
+    val onFavourite: (Boolean) -> Unit = {
+        state.player.currentlyPlayingSongId?.let { songId ->
+            if (it) {
+                dispatch(FavouritesReducer.FavouritesAction.AddToFavourites(songId))
+            } else {
+                dispatch(FavouritesReducer.FavouritesAction.RemoveFromFavourites(songId))
+            }
+        }
+    }
+
     if (song == null) {
         Column(
             modifier = Modifier.fillMaxSize(),
@@ -35,9 +58,31 @@ fun MusicPlayer(
         }
     } else {
         if (isScreenWide()) {
-            MusicPlayerLandscape(song, progress, isPlaying, onPlayPause, onSeek, onNext, onPrevious)
+            MusicPlayerLandscape(
+                song,
+                state.player,
+                isFavourite,
+                onPlayPause,
+                onSeek,
+                onNext,
+                onPrevious,
+                onShuffle,
+                onRepeat,
+                onFavourite,
+            )
         } else {
-            MusicPlayerPortrait(song, progress, isPlaying, onPlayPause, onSeek, onNext, onPrevious)
+            MusicPlayerPortrait(
+                song,
+                state.player,
+                isFavourite,
+                onPlayPause,
+                onSeek,
+                onNext,
+                onPrevious,
+                onShuffle,
+                onRepeat,
+                onFavourite,
+            )
         }
     }
 }
@@ -53,12 +98,16 @@ private fun isScreenWide(): Boolean {
 @PreviewScreenSizes
 fun MusicPlayerPreview() {
     MusicPlayer(
-        song = Song(
-            title = "Test Song",
-            artist = "Test Artist",
-            sourceUrl = "http://example.com",
+        AppState(
+            songs =
+                mapOf(
+                    1L to
+                        Song(
+                            title = "Test Song",
+                            artist = "Test Artist",
+                            sourceUrl = "http://example.com",
+                        ),
+                ),
         ),
-        progress = 0,
-        isPlaying = true,
     )
 }

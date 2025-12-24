@@ -37,11 +37,12 @@ fun Home(
 fun HomePreview() {
     Home(
         mapOf(
-            1L to Song(
-                title = "Test Song",
-                artist = "Test Artist",
-                sourceUrl = "http://example.com",
-            ),
+            1L to
+                Song(
+                    title = "Test Song",
+                    artist = "Test Artist",
+                    sourceUrl = "http://example.com",
+                ),
         ),
     )
 }

@@ -1,38 +1,76 @@
 package ch.openbard.app.redux.sagas
 
+import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import androidx.core.net.toUri
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
-import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.session.MediaController
+import androidx.media3.session.SessionToken
+import ch.openbard.app.player.PlaybackService
 import ch.openbard.app.redux.AppState
+import ch.openbard.app.redux.Song
 import ch.openbard.app.redux.reducers.PlayerReducer
 import ch.smoca.redux.Action
 import ch.smoca.redux.sagas.Saga
+import com.google.common.util.concurrent.MoreExecutors
 
-class PlayerSaga(context: Context) : Saga<AppState>(), Player.Listener {
+@Suppress("TooManyFunctions")
+class PlayerSaga(
+    context: Context,
+) : Saga<AppState>(),
+    Player.Listener {
     sealed class PlayerAction : Action {
         data object Play : PlayerAction()
+
         data object Pause : PlayerAction()
-        data class Seek(val whereTo: Long) : PlayerAction()
+
+        data class SeekTo(
+            val whereTo: Long,
+        ) : PlayerAction()
+
+        data object SeekToNext : PlayerAction()
+
+        data object SeekToPrevious : PlayerAction()
+
+        data class SetShuffleMode(
+            val enabled: Boolean,
+        ) : PlayerAction()
+
+        data class SetRepeatMode(
+            val enabled: Boolean,
+        ) : PlayerAction()
+
         data object Stop : PlayerAction()
+
         data object Release : PlayerAction()
+
         data object UpdatePosition : PlayerAction()
     }
 
     private val mainHandler = Handler(Looper.getMainLooper())
-    private val player = ExoPlayer.Builder(context).build()
+    private lateinit var controller: MediaController
 
     init {
-        mainHandler.post {
-            player.setWakeMode(C.WAKE_MODE_LOCAL)
-        }
+        val playbackService = Intent(context, PlaybackService::class.java)
+        val playbackComponent = ComponentName(context, PlaybackService::class.java)
+        context.startService(playbackService)
+
+        val sessionToken = SessionToken(context, playbackComponent)
+        val controllerFuture = MediaController.Builder(context, sessionToken).buildAsync()
+        controllerFuture.addListener(
+            { controller = controllerFuture.get() },
+            MoreExecutors.directExecutor(),
+        )
     }
 
     override suspend fun onAction(
@@ -41,26 +79,53 @@ class PlayerSaga(context: Context) : Saga<AppState>(), Player.Listener {
         newState: AppState,
     ) {
         when (action) {
-            PlayerAction.Play -> play()
-            PlayerAction.Pause -> pause()
-            is PlayerAction.Seek -> seek(action.whereTo)
+            PlayerAction.Play -> executeSafely { controller.play() }
+            PlayerAction.Pause -> executeSafely { controller.pause() }
+            is PlayerAction.SeekTo -> executeSafely { controller.seekTo(action.whereTo) }
+            PlayerAction.SeekToNext -> executeSafely { controller.seekToNextMediaItem() }
+            PlayerAction.SeekToPrevious -> executeSafely { controller.seekToPreviousMediaItem() }
+            is PlayerAction.SetShuffleMode -> {
+                executeSafely { controller.shuffleModeEnabled = action.enabled }
+            }
+
+            is PlayerAction.SetRepeatMode ->
+                executeSafely {
+                    controller.repeatMode =
+                        if (action.enabled) Player.REPEAT_MODE_ALL else Player.REPEAT_MODE_OFF
+                }
+
             PlayerAction.Stop -> stop()
             PlayerAction.Release -> release()
             PlayerAction.UpdatePosition -> position(newState.player.isInitialized)
-            is PlayerReducer.PlayerAction.UpdateSongId -> {
-                newState.songs[action.songId]?.sourceUrl?.let { setDataSource(it) }
+            is PlayerReducer.PlayerStateAction.UpdateCurrentPlaylist -> {
+                setMediaItems(newState.songs.filterKeys { it in action.playlist })
             }
         }
     }
 
     @Suppress("TooGenericExceptionCaught")
-    private fun setDataSource(sourceUrl: String) {
-        dispatch(PlayerReducer.PlayerAction.UpdateIsInitialized(false))
-        val mediaItem = MediaItem.fromUri(sourceUrl)
+    private fun setMediaItems(songs: Map<Long, Song>) {
+        dispatch(PlayerReducer.PlayerStateAction.UpdateIsInitialized(false))
+        val mediaItems =
+            songs.map { (id, song) ->
+                MediaItem
+                    .Builder()
+                    .setUri(song.sourceUrl)
+                    .setMediaId(id.toString())
+                    .setMediaMetadata(
+                        MediaMetadata
+                            .Builder()
+                            .setTitle(song.title)
+                            .setArtist(song.artist)
+                            .setAlbumTitle(song.album)
+                            .setArtworkUri(song.artworkUrl?.toUri())
+                            .build(),
+                    ).build()
+            }
         try {
             mainHandler.post {
-                player.setMediaItem(mediaItem)
-                player.setAudioAttributes(
+                controller.setMediaItems(mediaItems)
+                controller.setAudioAttributes(
                     AudioAttributes
                         .Builder()
                         .setUsage(C.USAGE_MEDIA)
@@ -68,95 +133,103 @@ class PlayerSaga(context: Context) : Saga<AppState>(), Player.Listener {
                         .build(),
                     false,
                 )
-                player.playbackParameters = PlaybackParameters(1.0f, 1.0f)
+                controller.playbackParameters = PlaybackParameters(1.0f, 1.0f)
 
-                player.addListener(
+                controller.addListener(
                     object : Player.Listener {
                         override fun onPlaybackStateChanged(state: Int) {
                             if (state == Player.STATE_READY) {
-                                player.removeListener(this)
-                                dispatch(PlayerReducer.PlayerAction.UpdateIsInitialized(true))
-                                play()
+                                controller.removeListener(this)
+                                dispatch(PlayerReducer.PlayerStateAction.UpdateIsInitialized(true))
+                                executeSafely { controller.play() }
                             }
                         }
                     },
                 )
-                player.addListener(this)
-                player.prepare()
+                controller.addListener(this)
+                controller.prepare()
             }
         } catch (e: Exception) {
             Log.e("${javaClass.simpleName}", "${e.message}")
         }
     }
 
-    fun play() {
+    private fun executeSafely(block: () -> Unit) {
         try {
             mainHandler.post {
-                player.play()
+                block()
             }
-            dispatch(PlayerReducer.PlayerAction.UpdateIsPlaying(true))
         } catch (e: IllegalStateException) {
             Log.e("${javaClass.simpleName}", "${e.message}")
-            dispatch(PlayerReducer.PlayerAction.UpdateIsPlaying(false))
         }
     }
 
-    fun pause() {
-        try {
-            mainHandler.post {
-                player.pause()
-            }
-            dispatch(PlayerReducer.PlayerAction.UpdateIsPlaying(false))
-        } catch (e: IllegalStateException) {
-            Log.e("${javaClass.simpleName}", "${e.message}")
-            dispatch(PlayerReducer.PlayerAction.UpdateIsPlaying(true))
-        }
-    }
-
-    fun position(isInitialized: Boolean) {
+    private fun position(isInitialized: Boolean) {
         if (!isInitialized) {
-            dispatch(PlayerReducer.PlayerAction.UpdatePosition(-1))
+            dispatch(PlayerReducer.PlayerStateAction.UpdateCurrentSongProgress(-1))
         } else {
             try {
                 mainHandler.post {
-                    dispatch(PlayerReducer.PlayerAction.UpdatePosition(player.currentPosition))
+                    dispatch(
+                        PlayerReducer.PlayerStateAction.UpdateCurrentSongProgress(
+                            controller.currentPosition
+                        )
+                    )
                 }
             } catch (e: IllegalStateException) {
                 Log.e("${javaClass.simpleName}", "${e.message}")
-                dispatch(PlayerReducer.PlayerAction.UpdatePosition(-1))
+                dispatch(
+                    PlayerReducer.PlayerStateAction.UpdateCurrentSongProgress(-1)
+                )
             }
         }
     }
 
-    fun seek(whereto: Long) {
-        try {
-            mainHandler.post {
-                player.seekTo(whereto)
-            }
-        } catch (e: IllegalStateException) {
-            Log.e("${javaClass.simpleName}", "${e.message}")
-        }
-    }
-
-    fun stop() {
+    private fun stop() {
         mainHandler.post {
-            player.stop()
+            controller.stop()
         }
-        dispatch(PlayerReducer.PlayerAction.UpdateIsInitialized(false))
+        dispatch(PlayerReducer.PlayerStateAction.UpdateIsInitialized(false))
     }
 
-    fun release() {
+    private fun release() {
         stop()
         mainHandler.post {
-            player.release()
+            controller.removeListener(this)
+            controller.release()
+        }
+    }
+
+    override fun onIsPlayingChanged(isPlaying: Boolean) {
+        dispatch(PlayerReducer.PlayerStateAction.UpdateIsPlaying(isPlaying))
+    }
+
+    override fun onShuffleModeEnabledChanged(shuffleModeEnabled: Boolean) {
+        super.onShuffleModeEnabledChanged(shuffleModeEnabled)
+        dispatch(PlayerReducer.PlayerStateAction.UpdateShuffleMode(shuffleModeEnabled))
+    }
+
+    override fun onRepeatModeChanged(repeatMode: Int) {
+        super.onRepeatModeChanged(repeatMode)
+        val isShuffleOn = repeatMode in listOf(Player.REPEAT_MODE_ALL, Player.REPEAT_MODE_ONE)
+        dispatch(PlayerReducer.PlayerStateAction.UpdateShuffleMode(isShuffleOn))
+    }
+
+    override fun onMediaItemTransition(
+        mediaItem: MediaItem?,
+        reason: Int,
+    ) {
+        super.onMediaItemTransition(mediaItem, reason)
+        mediaItem?.mediaId?.toLongOrNull()?.let { songId ->
+            dispatch(PlayerReducer.PlayerStateAction.UpdateCurrentSong(songId))
         }
     }
 
     override fun onPlayerError(error: PlaybackException) {
         Log.e("${javaClass.simpleName}", "${error.message}")
-        dispatch(PlayerReducer.PlayerAction.UpdateIsInitialized(false))
+        dispatch(PlayerReducer.PlayerStateAction.UpdateIsInitialized(false))
         mainHandler.post {
-            player.release()
+            controller.release()
         }
     }
 }

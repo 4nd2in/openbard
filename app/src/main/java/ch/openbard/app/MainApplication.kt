@@ -4,7 +4,9 @@ import android.app.Application
 import android.util.Log
 import ch.openbard.app.redux.AppState
 import ch.openbard.app.redux.middlewares.LoggerMiddleware
+import ch.openbard.app.redux.reducers.FavouritesReducer
 import ch.openbard.app.redux.reducers.NavigationReducer
+import ch.openbard.app.redux.reducers.PermissionsReducer
 import ch.openbard.app.redux.reducers.PlayerReducer
 import ch.openbard.app.redux.reducers.SongsReducer
 import ch.openbard.app.redux.sagas.PlayerSaga
@@ -27,11 +29,14 @@ class MainApplication : Application() {
                         NavigationReducer(),
                         SongsReducer(),
                         PlayerReducer(),
+                        PermissionsReducer(),
+                        FavouritesReducer(),
                     ),
-                sagas = listOf(
-                    SongsFinderSaga(this),
-                    PlayerSaga(this),
-                ),
+                sagas =
+                    listOf(
+                        SongsFinderSaga(this),
+                        PlayerSaga(this),
+                    ),
                 middlewares =
                     listOf(
                         LoggerMiddleware(),
