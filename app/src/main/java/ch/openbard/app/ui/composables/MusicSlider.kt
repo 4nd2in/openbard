@@ -57,12 +57,10 @@ fun MusicSlider(
             Text(
                 text = formatDuration(localProgress.roundToLong()),
                 style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Text(
                 text = formatDuration(duration),
                 style = MaterialTheme.typography.labelLarge,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }

@@ -57,7 +57,6 @@ fun SongListItem(
                 Text(
                     text = formatDuration(duration),
                     style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
         },

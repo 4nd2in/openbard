@@ -1,6 +1,9 @@
 package ch.openbard.app.redux
 
 import androidx.compose.runtime.Immutable
+import androidx.core.net.toUri
+import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
 import ch.openbard.app.ui.navigation.BackStackEntry
 import ch.smoca.redux.State
 import kotlinx.serialization.Serializable
@@ -46,6 +49,21 @@ data class Song(
     val trackNumber: Int? = null,
     val totalTracks: Int? = null,
 )
+
+fun Map.Entry<Long, Song>.toMediaItem(): MediaItem =
+    MediaItem
+        .Builder()
+        .setUri(value.sourceUrl)
+        .setMediaId(key.toString())
+        .setMediaMetadata(
+            MediaMetadata
+                .Builder()
+                .setTitle(value.title)
+                .setArtist(value.artist)
+                .setAlbumTitle(value.album)
+                .setArtworkUri(value.artworkUrl?.toUri())
+                .build(),
+        ).build()
 
 @Immutable
 data class Player(

@@ -6,11 +6,9 @@ import android.content.Intent
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import androidx.core.net.toUri
 import androidx.media3.common.AudioAttributes
 import androidx.media3.common.C
 import androidx.media3.common.MediaItem
-import androidx.media3.common.MediaMetadata
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.PlaybackParameters
 import androidx.media3.common.Player
@@ -20,9 +18,11 @@ import ch.openbard.app.player.PlaybackService
 import ch.openbard.app.redux.AppState
 import ch.openbard.app.redux.Song
 import ch.openbard.app.redux.reducers.PlayerReducer
+import ch.openbard.app.redux.toMediaItem
 import ch.smoca.redux.Action
 import ch.smoca.redux.sagas.Saga
 import com.google.common.util.concurrent.MoreExecutors
+import java.lang.Exception
 
 @Suppress("TooManyFunctions")
 class PlayerSaga(
@@ -98,68 +98,57 @@ class PlayerSaga(
             PlayerAction.Release -> release()
             PlayerAction.UpdatePosition -> position(newState.player.isInitialized)
             is PlayerReducer.PlayerStateAction.UpdateCurrentPlaylist -> {
-                setMediaItems(newState.songs.filterKeys { it in action.playlist })
+                setMediaItems(
+                    songToStart = newState.player.currentlyPlayingSongId,
+                    songs = newState.songs.filterKeys { it in action.playlist },
+                )
             }
+        }
+    }
+
+    private fun setMediaItems(
+        songToStart: Long?,
+        songs: Map<Long, Song>,
+    ) {
+        dispatch(PlayerReducer.PlayerStateAction.UpdateIsInitialized(false))
+        val entries = songs.entries.toList()
+        val mediaItems = songs.map { it.toMediaItem() }
+        val startIndex = entries.indexOfFirst { it.key == songToStart }
+        executeSafely {
+            controller.setMediaItems(mediaItems, startIndex, 0)
+            controller.setAudioAttributes(
+                AudioAttributes
+                    .Builder()
+                    .setUsage(C.USAGE_MEDIA)
+                    .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
+                    .build(),
+                false,
+            )
+            controller.playbackParameters = PlaybackParameters(1.0f, 1.0f)
+
+            controller.addListener(
+                object : Player.Listener {
+                    override fun onPlaybackStateChanged(state: Int) {
+                        if (state == Player.STATE_READY) {
+                            controller.removeListener(this)
+                            dispatch(PlayerReducer.PlayerStateAction.UpdateIsInitialized(true))
+                            executeSafely { controller.play() }
+                        }
+                    }
+                },
+            )
+            controller.addListener(this)
+            controller.prepare()
         }
     }
 
     @Suppress("TooGenericExceptionCaught")
-    private fun setMediaItems(songs: Map<Long, Song>) {
-        dispatch(PlayerReducer.PlayerStateAction.UpdateIsInitialized(false))
-        val mediaItems =
-            songs.map { (id, song) ->
-                MediaItem
-                    .Builder()
-                    .setUri(song.sourceUrl)
-                    .setMediaId(id.toString())
-                    .setMediaMetadata(
-                        MediaMetadata
-                            .Builder()
-                            .setTitle(song.title)
-                            .setArtist(song.artist)
-                            .setAlbumTitle(song.album)
-                            .setArtworkUri(song.artworkUrl?.toUri())
-                            .build(),
-                    ).build()
-            }
-        try {
-            mainHandler.post {
-                controller.setMediaItems(mediaItems)
-                controller.setAudioAttributes(
-                    AudioAttributes
-                        .Builder()
-                        .setUsage(C.USAGE_MEDIA)
-                        .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
-                        .build(),
-                    false,
-                )
-                controller.playbackParameters = PlaybackParameters(1.0f, 1.0f)
-
-                controller.addListener(
-                    object : Player.Listener {
-                        override fun onPlaybackStateChanged(state: Int) {
-                            if (state == Player.STATE_READY) {
-                                controller.removeListener(this)
-                                dispatch(PlayerReducer.PlayerStateAction.UpdateIsInitialized(true))
-                                executeSafely { controller.play() }
-                            }
-                        }
-                    },
-                )
-                controller.addListener(this)
-                controller.prepare()
-            }
-        } catch (e: Exception) {
-            Log.e("${javaClass.simpleName}", "${e.message}")
-        }
-    }
-
     private fun executeSafely(block: () -> Unit) {
         try {
             mainHandler.post {
                 block()
             }
-        } catch (e: IllegalStateException) {
+        } catch (e: Exception) {
             Log.e("${javaClass.simpleName}", "${e.message}")
         }
     }
@@ -211,8 +200,8 @@ class PlayerSaga(
 
     override fun onRepeatModeChanged(repeatMode: Int) {
         super.onRepeatModeChanged(repeatMode)
-        val isShuffleOn = repeatMode in listOf(Player.REPEAT_MODE_ALL, Player.REPEAT_MODE_ONE)
-        dispatch(PlayerReducer.PlayerStateAction.UpdateShuffleMode(isShuffleOn))
+        val isRepeatOn = repeatMode in listOf(Player.REPEAT_MODE_ALL, Player.REPEAT_MODE_ONE)
+        dispatch(PlayerReducer.PlayerStateAction.UpdateRepeatMode(isRepeatOn))
     }
 
     override fun onMediaItemTransition(

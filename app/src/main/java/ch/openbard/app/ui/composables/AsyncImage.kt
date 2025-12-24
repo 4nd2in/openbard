@@ -9,6 +9,7 @@ import ch.openbard.app.R
 import com.bumptech.glide.annotation.GlideModule
 import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 import com.bumptech.glide.integration.compose.GlideImage
+import com.bumptech.glide.integration.compose.placeholder
 
 @OptIn(ExperimentalGlideComposeApi::class)
 @Composable
@@ -23,6 +24,7 @@ fun AsyncImage(
             contentDescription = null,
             modifier = modifier,
             contentScale = ContentScale.Crop,
+            failure = placeholder(R.drawable.ic_image),
         )
     } else {
         Image(

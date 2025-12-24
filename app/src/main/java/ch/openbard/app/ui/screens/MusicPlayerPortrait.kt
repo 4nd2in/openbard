@@ -1,6 +1,5 @@
 package ch.openbard.app.ui.screens
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -10,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
@@ -41,7 +39,6 @@ fun MusicPlayerPortrait(
         modifier =
             Modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
                 .padding(16.dp),
         verticalArrangement = Arrangement.SpaceBetween,
     ) {
@@ -53,6 +50,8 @@ fun MusicPlayerPortrait(
                     .aspectRatio(1f),
             uri = song.artworkUrl,
         )
+
+        Spacer(modifier = Modifier.height(16.dp))
 
         SongInfo(song.title, song.artist)
 
