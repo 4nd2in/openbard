@@ -18,9 +18,7 @@ import androidx.compose.ui.unit.dp
 import ch.openbard.app.helper.TimeFormatter.formatDuration
 import ch.openbard.app.redux.Song
 import ch.openbard.app.ui.theme.OpenBardTheme
-import com.bumptech.glide.integration.compose.ExperimentalGlideComposeApi
 
-@OptIn(ExperimentalGlideComposeApi::class)
 @Composable
 fun SongListItem(
     song: Song,

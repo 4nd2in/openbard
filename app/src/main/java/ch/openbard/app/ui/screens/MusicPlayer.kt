@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -19,7 +18,6 @@ import ch.openbard.app.redux.sagas.PlayerSaga
 import ch.smoca.redux.Action
 import kotlin.collections.get
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun MusicPlayer(
     state: AppState,
@@ -28,10 +26,11 @@ fun MusicPlayer(
     val song = state.songs[state.player.currentlyPlayingSongId]
     val isFavourite = state.player.currentlyPlayingSongId in state.favourites
     val onPlayPause = {
-        if (state.player.isPlaying)
+        if (state.player.isPlaying) {
             dispatch(PlayerSaga.PlayerAction.Pause)
-        else
+        } else {
             dispatch(PlayerSaga.PlayerAction.Play)
+        }
     }
     val onSeek: (Long) -> Unit = { dispatch(PlayerSaga.PlayerAction.SeekTo(it)) }
     val onNext = { dispatch(PlayerSaga.PlayerAction.SeekToNext) }

@@ -172,14 +172,14 @@ class PlayerSaga(
                 mainHandler.post {
                     dispatch(
                         PlayerReducer.PlayerStateAction.UpdateCurrentSongProgress(
-                            controller.currentPosition
-                        )
+                            controller.currentPosition,
+                        ),
                     )
                 }
             } catch (e: IllegalStateException) {
                 Log.e("${javaClass.simpleName}", "${e.message}")
                 dispatch(
-                    PlayerReducer.PlayerStateAction.UpdateCurrentSongProgress(-1)
+                    PlayerReducer.PlayerStateAction.UpdateCurrentSongProgress(-1),
                 )
             }
         }

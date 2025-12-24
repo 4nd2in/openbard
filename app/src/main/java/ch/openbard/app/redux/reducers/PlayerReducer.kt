@@ -64,7 +64,7 @@ class PlayerReducer : Reducer<AppState> {
 
             is PlayerStateAction.UpdateCurrentSongProgress -> {
                 state.copy(
-                    player = state.player.copy(currentlyPlayingSongProgress = action.progress)
+                    player = state.player.copy(currentlyPlayingSongProgress = action.progress),
                 )
             }
 

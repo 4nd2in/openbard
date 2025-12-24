@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -13,7 +12,6 @@ import androidx.compose.ui.tooling.preview.PreviewScreenSizes
 import ch.openbard.app.redux.Song
 import ch.openbard.app.ui.composables.SongList
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun Home(
     songs: Map<Long, Song>,

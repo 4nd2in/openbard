@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -25,7 +24,6 @@ import ch.openbard.app.ui.composables.PlaybackControls
 import ch.openbard.app.ui.composables.QueueControls
 import ch.openbard.app.ui.composables.SongInfo
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun MusicPlayerPortrait(
     song: Song,

@@ -106,8 +106,8 @@ private fun Screens(
                             dispatch(PlayerReducer.PlayerStateAction.UpdateCurrentSong(songId))
                             dispatch(
                                 PlayerReducer.PlayerStateAction.UpdateCurrentPlaylist(
-                                    state.songs.keys.toList()
-                                )
+                                    state.songs.keys.toList(),
+                                ),
                             )
                             onNavigate(BackStackEntry.Player)
                         },

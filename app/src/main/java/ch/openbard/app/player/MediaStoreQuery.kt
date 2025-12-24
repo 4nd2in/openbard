@@ -102,10 +102,11 @@ class MediaStoreQuery(
                                     year = cursor.getInt(yearCol),
                                     trackNumber = cursor.getInt(trackCol),
                                     genre =
-                                        if (genreCol != -1)
+                                        if (genreCol != -1) {
                                             cursor.getString(genreCol)
-                                        else
-                                            null,
+                                        } else {
+                                            null
+                                        },
                                     artworkUrl = artworkUri.toString(),
                                 )
                         }
