@@ -7,6 +7,7 @@ plugins {
     alias(libs.plugins.serialization)
     alias(libs.plugins.ktlint)
     alias(libs.plugins.detekt)
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -93,6 +94,7 @@ dependencies {
 
     implementation(libs.bumptech.glide)
     implementation(libs.bumptech.glide.compose)
+    ksp(libs.bumptech.glide.ksp)
 
     implementation(libs.smoca.redux)
 }
