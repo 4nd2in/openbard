@@ -3,7 +3,9 @@ package ch.openbard.app.ui.composables
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.ButtonGroupDefaults
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -31,12 +33,14 @@ fun PlaybackControls(
 ) {
     Row(
         Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceEvenly,
+        horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.CenterVertically,
     ) {
         IconButton(
             modifier =
-                Modifier.size(
+                Modifier
+                    .padding(end = 8.dp)
+                    .size(
                     IconButtonDefaults.largeContainerSize(
                         IconButtonDefaults.IconButtonWidthOption.Uniform,
                     ),
@@ -86,7 +90,9 @@ fun PlaybackControls(
         }
         IconButton(
             modifier =
-                Modifier.size(
+                Modifier
+                    .padding(start = 8.dp)
+                    .size(
                     IconButtonDefaults.largeContainerSize(
                         IconButtonDefaults.IconButtonWidthOption.Uniform,
                     ),

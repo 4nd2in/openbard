@@ -2,12 +2,10 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.serialization)
     alias(libs.plugins.ktlint)
     alias(libs.plugins.detekt)
-    alias(libs.plugins.ksp)
 }
 
 android {
@@ -94,7 +92,6 @@ dependencies {
 
     implementation(libs.bumptech.glide)
     implementation(libs.bumptech.glide.compose)
-    ksp(libs.bumptech.glide.ksp)
 
     implementation(libs.smoca.redux)
 }
